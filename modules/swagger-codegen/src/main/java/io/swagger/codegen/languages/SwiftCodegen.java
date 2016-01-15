@@ -217,6 +217,9 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
   public String getSwaggerType(Property p) {
     String swaggerType = super.getSwaggerType(p);
     String type = null;
+    if("URL".equals(p.getFormat())) {
+      return "NSURL";
+    }
     if (typeMapping.containsKey(swaggerType)) {
       type = typeMapping.get(swaggerType);
       if (languageSpecificPrimitives.contains(type))
