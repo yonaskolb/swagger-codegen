@@ -68,6 +68,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
     embeddedTemplateDir = templateDir = "swift";
     apiPackage = File.separator + "APIs";
     modelPackage = File.separator + "Models";
+    supportsInheritance = true;
 
     languageSpecificPrimitives = new HashSet<String>(
       Arrays.asList(
