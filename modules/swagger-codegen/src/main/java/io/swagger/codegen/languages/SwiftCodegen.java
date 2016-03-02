@@ -121,6 +121,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
     typeMapping.put("double", "Double");
     typeMapping.put("object", "String");
     typeMapping.put("file", "NSURL");
+    typeMapping.put("uri", "NSURL");
 
     importMapping = new HashMap<String, String>();
 
@@ -217,7 +218,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
   public String getSwaggerType(Property p) {
     String swaggerType = super.getSwaggerType(p);
     String type = null;
-    if("URL".equals(p.getFormat())) {
+    if("URL".equals(p.getFormat()) || "uri".equals(p.getFormat())) {
       return "NSURL";
     }
     if (typeMapping.containsKey(swaggerType)) {
