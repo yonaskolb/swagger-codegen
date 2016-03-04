@@ -98,7 +98,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         "true", "lazy", "operator", "in", "COLUMN", "left", "private", "return", "FILE", "mutating", "protocol",
         "switch", "FUNCTION", "none", "public", "where", "LINE", "nonmutating", "static", "while", "optional",
         "struct", "override", "subscript", "postfix", "typealias", "precedence", "var", "prefix", "Protocol",
-        "required", "right", "set", "Type", "unowned", "weak")
+        "required", "right", "set", "unowned", "weak", "Type")
     );
 
     typeMapping = new HashMap<String, String>();
@@ -266,7 +266,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
       codegenProperty.datatypeWithEnum =
               StringUtils.left(codegenProperty.datatypeWithEnum, codegenProperty.datatypeWithEnum.length() - "Enum".length());
       if (reservedWords.contains(codegenProperty.datatypeWithEnum)) {
-        codegenProperty.datatypeWithEnum = escapeReservedWord(codegenProperty.datatypeWithEnum);
+        codegenProperty.datatypeWithEnum = codegenProperty.datatypeWithEnum + "Enum";
       }
     }
     return codegenProperty;
