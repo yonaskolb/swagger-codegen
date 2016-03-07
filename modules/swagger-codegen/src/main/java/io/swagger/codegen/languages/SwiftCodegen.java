@@ -42,7 +42,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
   protected String projectName = "SwaggerClient";
   protected boolean unwrapRequired;
   protected String[] responseAs = new String[0];
-  protected String sourceFolder = "Classes" + File.separator + "Swaggers";
+  protected String sourceFolder = "Source";
   private static final Pattern PATH_PARAM_PATTERN = Pattern.compile("\\{[a-zA-Z_]+\\}");
 
   @Override
@@ -153,7 +153,6 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
     } else {
       additionalProperties.put(PROJECT_NAME, projectName);
     }
-    sourceFolder = projectName + File.separator + sourceFolder;
 
     // Setup unwrapRequired option, which makes all the properties with "required" non-optional
     if (additionalProperties.containsKey(UNWRAP_REQUIRED)) {
