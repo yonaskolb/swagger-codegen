@@ -44,7 +44,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
     protected boolean unwrapRequired;
     protected boolean swiftUseApiNamespace;
     protected String[] responseAs = new String[0];
-    protected String sourceFolder = "Classes" + File.separator + "Swaggers";
+    protected String sourceFolder = "Source";
     private static final Pattern PATH_PARAM_PATTERN = Pattern.compile("\\{[a-zA-Z_]+\\}");
 
     @Override
@@ -70,6 +70,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         embeddedTemplateDir = templateDir = "swift";
         apiPackage = File.separator + "APIs";
         modelPackage = File.separator + "Models";
+        supportsInheritance = true;
 
         languageSpecificPrimitives = new HashSet<String>(
                 Arrays.asList(
@@ -95,7 +96,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
                     "Empty",
                     "AnyObject")
                 );
-        setReservedWordsLowerCase(
+        reservedWords = new HashSet<String>(
                 Arrays.asList(
                     "class", "break", "as", "associativity", "deinit", "case", "dynamicType", "convenience", "enum", "continue",
                     "false", "dynamic", "extension", "default", "is", "didSet", "func", "do", "nil", "final", "import", "else",
@@ -117,10 +118,10 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         typeMapping.put("string", "String");
         typeMapping.put("char", "Character");
         typeMapping.put("short", "Int");
-        typeMapping.put("int", "Int32");
+        typeMapping.put("int", "Int");
         typeMapping.put("long", "Int64");
-        typeMapping.put("integer", "Int32");
-        typeMapping.put("Integer", "Int32");
+        typeMapping.put("integer", "Int");
+        typeMapping.put("Integer", "Int");
         typeMapping.put("float", "Float");
         typeMapping.put("number", "Double");
         typeMapping.put("double", "Double");
@@ -161,7 +162,6 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         } else {
             additionalProperties.put(PROJECT_NAME, projectName);
         }
-        sourceFolder = projectName + File.separator + sourceFolder;
 
         // Setup unwrapRequired option, which makes all the properties with "required" non-optional
         if (additionalProperties.containsKey(UNWRAP_REQUIRED)) {
@@ -235,6 +235,10 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
     public String getSwaggerType(Property p) {
         String swaggerType = super.getSwaggerType(p);
         String type = null;
+        if("URL".equals(p.getFormat()) || "uri".equals(p.getFormat())) {
+            return "NSURL";
+        }
+
         if (typeMapping.containsKey(swaggerType)) {
             type = typeMapping.get(swaggerType);
             if (languageSpecificPrimitives.contains(type) || defaultIncludes.contains(type))
@@ -281,6 +285,11 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         }
 
         return name;
+    }
+
+    @Override
+    protected boolean isReservedWord(String word) {
+        return word != null && reservedWords.contains(word);
     }
 
     /**
@@ -335,7 +344,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
             // Swift compiler will generate an error
             if (isReservedWord(codegenProperty.datatypeWithEnum) ||
                     name.equals(codegenProperty.datatypeWithEnum)) {
-                codegenProperty.datatypeWithEnum = escapeReservedWord(codegenProperty.datatypeWithEnum);
+                codegenProperty.datatypeWithEnum = codegenProperty.datatypeWithEnum + "Enum";// escapeReservedWord(codegenProperty.datatypeWithEnum);
                     }
         }
         return codegenProperty;
