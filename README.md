@@ -6,6 +6,8 @@
 
 :star::star::star: If you would like to contribute, please refer to [guidelines](https://github.com/swagger-api/swagger-codegen/blob/master/CONTRIBUTING.md) and a list of [open tasks](https://github.com/swagger-api/swagger-codegen/issues?q=is%3Aopen+is%3Aissue+label%3A%22Need+community+contribution%22).:star::star::star:
 
+:notebook_with_decorative_cover: For more information, please refer to the [Wiki page](https://github.com/swagger-api/swagger-codegen/wiki) and [FAQ](https://github.com/swagger-api/swagger-codegen/wiki/FAQ) :notebook_with_decorative_cover:
+
 ## Overview
 This is the swagger codegen project, which allows generation of client libraries automatically from a Swagger-compliant server.
 
@@ -565,7 +567,7 @@ You can also use the codegen to generate a server for a couple different framewo
 ```
 java -jar modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
   -i http://petstore.swagger.io/v2/swagger.json \
-  -l nodejs \
+  -l nodejs-server \
   -o samples/server/petstore/nodejs
 ```
 
@@ -740,6 +742,7 @@ Here are some companies/projects using Swagger Codegen in production. To add you
 - [Acunetix](https://www.acunetix.com/)
 - [Atlassian](https://www.atlassian.com/)
 - [beemo](http://www.beemo.eu)
+- [Cachet Financial](http://www.cachetfinancial.com/)
 - [CloudBoost](https://www.CloudBoost.io/)
 - [Cupix](http://www.cupix.com)
 - [DocuSign](https://www.docusign.com)
@@ -748,6 +751,7 @@ Here are some companies/projects using Swagger Codegen in production. To add you
 - [everystory.us](http://everystory.us)
 - [Expected Behavior](http://www.expectedbehavior.com/)
 - [FH Münster - University of Applied Sciences](http://www.fh-muenster.de)
+- [Interactive Intelligence](http://developer.mypurecloud.com/)
 - [LANDR Audio](https://www.landr.com/)
 - [LiveAgent](https://www.ladesk.com/)
 - [Kuary](https://kuary.com/)
