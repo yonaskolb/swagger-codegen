@@ -327,6 +327,23 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
     }
 
     @Override
+    public CodegenModel fromModel(String name, Model model, Map<String, Model> allDefinitions) {
+        CodegenModel codegenModel = super.fromModel(name, model, allDefinitions);
+        if (codegenModel.isEnum != null && codegenModel.isEnum) {
+            List<Map<String, String>> swiftEnums = new ArrayList<Map<String, String>>();
+            List<String> values = codegenModel.allowableValues;
+            for (String value : values) {
+                Map<String, String> map = new HashMap<String, String>();
+                map.put("enum", toSwiftyEnumName(value));
+                map.put("raw", value);
+                swiftEnums.add(map);
+            }
+            codegenModel.enumValues = swiftEnums;
+        }
+        return codegenModel;
+    }
+
+    @Override
     public CodegenProperty fromProperty(String name, Property p) {
         CodegenProperty codegenProperty = super.fromProperty(name, p);
         if (codegenProperty.isEnum) {
