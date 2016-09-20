@@ -87,8 +87,8 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
                 );
         defaultIncludes = new HashSet<String>(
                 Arrays.asList(
-                    "NSDate",
-                    "NSURL", // for file
+                    "Date",
+                    "URL", // for file
                     "Array",
                     "Dictionary",
                     "Set",
@@ -105,16 +105,16 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
                     "true", "lazy", "operator", "in", "COLUMN", "left", "private", "return", "FILE", "mutating", "protocol",
                     "switch", "FUNCTION", "none", "public", "where", "LINE", "nonmutating", "static", "while", "optional",
                     "struct", "override", "subscript", "postfix", "typealias", "precedence", "var", "prefix", "Protocol",
-                    "required", "right", "set", "Type", "unowned", "weak")
+                    "required", "right", "set", "Type", "unowned", "weak", "Any")
                 );
 
         typeMapping = new HashMap<String, String>();
         typeMapping.put("array", "Array");
         typeMapping.put("List", "Array");
         typeMapping.put("map", "Dictionary");
-        typeMapping.put("date", "NSDate");
-        typeMapping.put("Date", "NSDate");
-        typeMapping.put("DateTime", "NSDate");
+        typeMapping.put("date", "Date");
+        typeMapping.put("Date", "Date");
+        typeMapping.put("DateTime", "Date");
         typeMapping.put("boolean", "Bool");
         typeMapping.put("string", "String");
         typeMapping.put("char", "Character");
@@ -127,7 +127,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         typeMapping.put("number", "Double");
         typeMapping.put("double", "Double");
         typeMapping.put("object", "AnyObject");
-        typeMapping.put("file", "NSURL");
+        typeMapping.put("file", "URL");
         //TODO binary should be mapped to byte array
         // mapped to String as a workaround
         typeMapping.put("binary", "String");
@@ -238,7 +238,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         String swaggerType = super.getSwaggerType(p);
         String type = null;
         if("URL".equals(p.getFormat()) || "uri".equals(p.getFormat())) {
-            return "NSURL";
+            return "URL";
         }
 
         if (typeMapping.containsKey(swaggerType)) {
@@ -388,7 +388,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
 
     @Override
     public String toOperationId(String operationId) {
-        operationId = camelize(sanitizeName(operationId), true); 
+        operationId = camelize(sanitizeName(operationId), true);
 
         // throw exception if method name is empty. This should not happen but keep the check just in case
         if (StringUtils.isEmpty(operationId)) {
