@@ -228,7 +228,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         } else if (p instanceof MapProperty) {
             MapProperty mp = (MapProperty) p;
             Property inner = mp.getAdditionalProperties();
-            return "[String:" + getTypeDeclaration(inner) + "]";
+            return "[String: " + getTypeDeclaration(inner) + "]";
         }
         return super.getTypeDeclaration(p);
     }
@@ -317,7 +317,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         if (p instanceof MapProperty) {
             MapProperty ap = (MapProperty) p;
             String inner = getSwaggerType(ap.getAdditionalProperties());
-            return "[String:" + inner + "]";
+            return "[String: " + inner + "]";
         } else if (p instanceof ArrayProperty) {
             ArrayProperty ap = (ArrayProperty) p;
             String inner = getSwaggerType(ap.getItems());
@@ -370,12 +370,19 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
 
     @SuppressWarnings("static-method")
     public String toSwiftyEnumName(String value) {
-        // Prevent from breaking properly cased identifier
-        if (value.matches("[A-Z][a-z0-9]+[a-zA-Z0-9]*")) {
-            return value;
-        }
-        char[] separators = {'-', '_', ' '};
-        return WordUtils.capitalizeFully(StringUtils.lowerCase(value), separators).replaceAll("[-_ ]", "");
+        value = sanitizeName(value);
+     	     	
+     	if (value.contains("_") || value.contains("-") || value.contains(" ")) {
+     		char[] separators = {'-', '_', ' '};
+     		value = WordUtils.capitalizeFully(value, separators).replaceAll("[-_ ]", "");
+     	}
+     	if (value.toUpperCase().equals(value)) {
+     		value = value.toLowerCase();
+     	}
+     	else {
+        	value = camelize(value, true);
+     	}
+        return value;
     }
 
 
