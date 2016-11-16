@@ -395,7 +395,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
 
     @Override
     public String toOperationId(String operationId) {
-        operationId = camelize(sanitizeName(operationId), true);
+        operationId = camelize(sanitizeName(operationId), false);
 
         // throw exception if method name is empty. This should not happen but keep the check just in case
         if (StringUtils.isEmpty(operationId)) {
