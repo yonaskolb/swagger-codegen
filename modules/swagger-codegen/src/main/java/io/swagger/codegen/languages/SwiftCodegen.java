@@ -44,7 +44,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
     protected boolean unwrapRequired;
     protected boolean swiftUseApiNamespace;
     protected String[] responseAs = new String[0];
-    protected String sourceFolder = "Classes" + File.separator + "Swaggers";
+    protected String sourceFolder = "Source";
     private static final Pattern PATH_PARAM_PATTERN = Pattern.compile("\\{[a-zA-Z_]+\\}");
 
     @Override
@@ -70,6 +70,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         embeddedTemplateDir = templateDir = "swift";
         apiPackage = File.separator + "APIs";
         modelPackage = File.separator + "Models";
+        supportsInheritance = true;
 
         languageSpecificPrimitives = new HashSet<String>(
                 Arrays.asList(
@@ -86,8 +87,8 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
                 );
         defaultIncludes = new HashSet<String>(
                 Arrays.asList(
-                    "NSDate",
-                    "NSURL", // for file
+                    "Date",
+                    "URL", // for file
                     "Array",
                     "Dictionary",
                     "Set",
@@ -95,40 +96,42 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
                     "Empty",
                     "AnyObject")
                 );
-        setReservedWordsLowerCase(
+        reservedWords = new HashSet<String>(
                 Arrays.asList(
+                    "Int", "Int32", "Int64", "Int64", "Float", "Double", "Bool", "Void", "String", "Character", "AnyObject",
                     "class", "break", "as", "associativity", "deinit", "case", "dynamicType", "convenience", "enum", "continue",
                     "false", "dynamic", "extension", "default", "is", "didSet", "func", "do", "nil", "final", "import", "else",
                     "self", "get", "init", "fallthrough", "Self", "infix", "internal", "for", "super", "inout", "let", "if",
                     "true", "lazy", "operator", "in", "COLUMN", "left", "private", "return", "FILE", "mutating", "protocol",
                     "switch", "FUNCTION", "none", "public", "where", "LINE", "nonmutating", "static", "while", "optional",
                     "struct", "override", "subscript", "postfix", "typealias", "precedence", "var", "prefix", "Protocol",
-                    "required", "right", "set", "Type", "unowned", "weak")
+                    "required", "right", "set", "Type", "unowned", "weak", "Any")
                 );
 
         typeMapping = new HashMap<String, String>();
         typeMapping.put("array", "Array");
         typeMapping.put("List", "Array");
         typeMapping.put("map", "Dictionary");
-        typeMapping.put("date", "NSDate");
-        typeMapping.put("Date", "NSDate");
-        typeMapping.put("DateTime", "NSDate");
+        typeMapping.put("date", "Date");
+        typeMapping.put("Date", "Date");
+        typeMapping.put("DateTime", "Date");
         typeMapping.put("boolean", "Bool");
         typeMapping.put("string", "String");
         typeMapping.put("char", "Character");
         typeMapping.put("short", "Int");
-        typeMapping.put("int", "Int32");
+        typeMapping.put("int", "Int");
         typeMapping.put("long", "Int64");
-        typeMapping.put("integer", "Int32");
-        typeMapping.put("Integer", "Int32");
+        typeMapping.put("integer", "Int");
+        typeMapping.put("Integer", "Int");
         typeMapping.put("float", "Float");
         typeMapping.put("number", "Double");
         typeMapping.put("double", "Double");
         typeMapping.put("object", "AnyObject");
-        typeMapping.put("file", "NSURL");
+        typeMapping.put("file", "URL");
         //TODO binary should be mapped to byte array
         // mapped to String as a workaround
         typeMapping.put("binary", "String");
+        typeMapping.put("ByteArray", "String");
 
         importMapping = new HashMap<String, String>();
 
@@ -161,7 +164,6 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         } else {
             additionalProperties.put(PROJECT_NAME, projectName);
         }
-        sourceFolder = projectName + File.separator + sourceFolder;
 
         // Setup unwrapRequired option, which makes all the properties with "required" non-optional
         if (additionalProperties.containsKey(UNWRAP_REQUIRED)) {
@@ -226,7 +228,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         } else if (p instanceof MapProperty) {
             MapProperty mp = (MapProperty) p;
             Property inner = mp.getAdditionalProperties();
-            return "[String:" + getTypeDeclaration(inner) + "]";
+            return "[String: " + getTypeDeclaration(inner) + "]";
         }
         return super.getTypeDeclaration(p);
     }
@@ -235,6 +237,10 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
     public String getSwaggerType(Property p) {
         String swaggerType = super.getSwaggerType(p);
         String type = null;
+        if("URL".equals(p.getFormat()) || "uri".equals(p.getFormat())) {
+            return "URL";
+        }
+
         if (typeMapping.containsKey(swaggerType)) {
             type = typeMapping.get(swaggerType);
             if (languageSpecificPrimitives.contains(type) || defaultIncludes.contains(type))
@@ -283,6 +289,11 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         return name;
     }
 
+    @Override
+    protected boolean isReservedWord(String word) {
+        return word != null && reservedWords.contains(word);
+    }
+
     /**
      * Return the capitalized file name of the model
      *
@@ -306,13 +317,30 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         if (p instanceof MapProperty) {
             MapProperty ap = (MapProperty) p;
             String inner = getSwaggerType(ap.getAdditionalProperties());
-            return "[String:" + inner + "]";
+            return "[String: " + inner + "]";
         } else if (p instanceof ArrayProperty) {
             ArrayProperty ap = (ArrayProperty) p;
             String inner = getSwaggerType(ap.getItems());
             return "[" + inner + "]";
         }
         return null;
+    }
+
+    @Override
+    public CodegenModel fromModel(String name, Model model, Map<String, Model> allDefinitions) {
+        CodegenModel codegenModel = super.fromModel(name, model, allDefinitions);
+        if (codegenModel.isEnum != null && codegenModel.isEnum) {
+            List<Map<String, String>> swiftEnums = new ArrayList<Map<String, String>>();
+            List<String> values = codegenModel.allowableValues;
+            for (String value : values) {
+                Map<String, String> map = new HashMap<String, String>();
+                map.put("enum", toSwiftyEnumName(value));
+                map.put("raw", value);
+                swiftEnums.add(map);
+            }
+            codegenModel.enumValues = swiftEnums;
+        }
+        return codegenModel;
     }
 
     @Override
@@ -333,22 +361,28 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
             // Ensure that the enum type doesn't match a reserved word or
             // the variable name doesn't match the generated enum type or the
             // Swift compiler will generate an error
-            if (isReservedWord(codegenProperty.datatypeWithEnum) ||
-                    name.equals(codegenProperty.datatypeWithEnum)) {
-                codegenProperty.datatypeWithEnum = escapeReservedWord(codegenProperty.datatypeWithEnum);
-                    }
+            if (isReservedWord(codegenProperty.datatypeWithEnum) || name.equals(codegenProperty.datatypeWithEnum)) {
+                codegenProperty.datatypeWithEnum = codegenProperty.datatypeWithEnum + "Enum";
+            }
         }
         return codegenProperty;
     }
 
     @SuppressWarnings("static-method")
     public String toSwiftyEnumName(String value) {
-        // Prevent from breaking properly cased identifier
-        if (value.matches("[A-Z][a-z0-9]+[a-zA-Z0-9]*")) {
-            return value;
-        }
-        char[] separators = {'-', '_', ' '};
-        return WordUtils.capitalizeFully(StringUtils.lowerCase(value), separators).replaceAll("[-_ ]", "");
+        value = sanitizeName(value);
+     	     	
+     	if (value.contains("_") || value.contains("-") || value.contains(" ")) {
+     		char[] separators = {'-', '_', ' '};
+     		value = WordUtils.capitalizeFully(value, separators).replaceAll("[-_ ]", "");
+     	}
+     	if (value.toUpperCase().equals(value)) {
+     		value = value.toLowerCase();
+     	}
+     	else {
+        	value = camelize(value, true);
+     	}
+        return value;
     }
 
 
@@ -361,7 +395,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
 
     @Override
     public String toOperationId(String operationId) {
-        operationId = camelize(sanitizeName(operationId), true); 
+        operationId = camelize(sanitizeName(operationId), false);
 
         // throw exception if method name is empty. This should not happen but keep the check just in case
         if (StringUtils.isEmpty(operationId)) {
